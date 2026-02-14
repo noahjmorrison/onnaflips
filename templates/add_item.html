@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Add Item - Onna's Flips{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Add New Item</h2>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Item Description *</label>
+                        <input type="text" class="form-control" name="description" required placeholder="e.g., Oak dining table with 4 chairs">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Date Bought</label>
+                            <input type="date" class="form-control" name="date_bought">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date Sold</label>
+                            <input type="date" class="form-control" name="date_sold">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-4">
+                            <label class="form-label">Cost ($)</label>
+                            <input type="number" class="form-control" name="cost" step="0.01" min="0" placeholder="0">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Listing Price ($)</label>
+                            <input type="number" class="form-control" name="listing_price" step="0.01" min="0" placeholder="0">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Sold For ($)</label>
+                            <input type="number" class="form-control" name="sold_for" step="0.01" min="0" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Listed">Listed</option>
+                            <option value="Sold">Sold</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="2" placeholder="Any notes about the item..."></textarea>
+                    </div>
+
+                    <!-- Live Profit Preview -->
+                    <div class="card bg-light mb-3" id="profitPreview">
+                        <div class="card-body py-2">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">Est. Profit</small>
+                                    <div class="fw-bold" id="previewProfit">-</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Margin</small>
+                                    <div class="fw-bold" id="previewMargin">-</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Status</small>
+                                    <div class="fw-bold" id="previewStatus">Listed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-plus-lg"></i> Add Item
+                        </button>
+                        <a href="/inventory" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const form = document.getElementById('addForm');
+
+// Auto-set today's date for date_bought
+form.date_bought.value = new Date().toISOString().split('T')[0];
+
+// Auto-change status when sold_for is filled
+form.sold_for.addEventListener('input', () => {
+    if (form.sold_for.value && parseFloat(form.sold_for.value) > 0) {
+        form.status.value = 'Sold';
+        if (!form.date_sold.value) {
+            form.date_sold.value = new Date().toISOString().split('T')[0];
+        }
+    }
+});
+
+// Live profit preview
+['cost', 'listing_price', 'sold_for', 'status'].forEach(name => {
+    form[name].addEventListener('input', updatePreview);
+    form[name].addEventListener('change', updatePreview);
+});
+
+function updatePreview() {
+    const cost = parseFloat(form.cost.value) || 0;
+    const listing = parseFloat(form.listing_price.value) || 0;
+    const sold = parseFloat(form.sold_for.value) || 0;
+    const status = form.status.value;
+
+    const salePrice = status === 'Sold' && sold ? sold : listing;
+    const profit = salePrice ? salePrice - cost : 0;
+    const margin = salePrice ? ((salePrice - cost) / salePrice * 100) : 0;
+
+    document.getElementById('previewProfit').textContent = profit ? '$' + profit.toFixed(0) : '-';
+    document.getElementById('previewProfit').className = 'fw-bold ' + (profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : '');
+    document.getElementById('previewMargin').textContent = salePrice ? margin.toFixed(0) + '%' : '-';
+    document.getElementById('previewStatus').textContent = status;
+    document.getElementById('previewStatus').className = 'fw-bold ' + (status === 'Sold' ? 'text-success' : 'text-warning');
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (res.ok) {
+        window.location.href = '/inventory';
+    } else {
+        alert('Error adding item. Please check the form.');
+    }
+});
+</script>
+{% endblock %}

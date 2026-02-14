@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Edit Item - Onna's Flips{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2 class="mb-4"><i class="bi bi-pencil"></i> Edit Item</h2>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Item Description *</label>
+                        <input type="text" class="form-control" name="description" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Date Bought</label>
+                            <input type="date" class="form-control" name="date_bought">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Date Sold</label>
+                            <input type="date" class="form-control" name="date_sold">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-4">
+                            <label class="form-label">Cost ($)</label>
+                            <input type="number" class="form-control" name="cost" step="0.01" min="0">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Listing Price ($)</label>
+                            <input type="number" class="form-control" name="listing_price" step="0.01" min="0">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Sold For ($)</label>
+                            <input type="number" class="form-control" name="sold_for" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Listed">Listed</option>
+                            <option value="Sold">Sold</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="2"></textarea>
+                    </div>
+
+                    <!-- Stats Preview -->
+                    <div class="card bg-light mb-3" id="statsCard" style="display:none;">
+                        <div class="card-body py-2">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <small class="text-muted">Profit</small>
+                                    <div class="fw-bold" id="editProfit">-</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Margin</small>
+                                    <div class="fw-bold" id="editMargin">-</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Days</small>
+                                    <div class="fw-bold" id="editDays">-</div>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">$/Day</small>
+                                    <div class="fw-bold" id="editPPD">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn btn-success" id="markSoldBtn" style="display:none;">
+                            <i class="bi bi-cash"></i> Mark Sold
+                        </button>
+                        <a href="/inventory" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const itemId = {{ item_id }};
+const form = document.getElementById('editForm');
+
+document.addEventListener('DOMContentLoaded', loadItem);
+
+async function loadItem() {
+    const res = await fetch(`/api/items/${itemId}`);
+    const item = await res.json();
+
+    form.description.value = item.description || '';
+    form.date_bought.value = item.date_bought || '';
+    form.date_sold.value = item.date_sold || '';
+    form.cost.value = item.cost || '';
+    form.listing_price.value = item.listing_price || '';
+    form.sold_for.value = item.sold_for || '';
+    form.status.value = item.status || 'Listed';
+    form.notes.value = item.notes || '';
+
+    // Show mark sold button for listed items
+    if (item.status === 'Listed') {
+        document.getElementById('markSoldBtn').style.display = '';
+    }
+
+    // Show stats for sold items
+    if (item.status === 'Sold') {
+        document.getElementById('statsCard').style.display = '';
+        document.getElementById('editProfit').textContent = item.actual_profit !== null ? '$' + item.actual_profit : '-';
+        document.getElementById('editProfit').className = 'fw-bold ' + (item.actual_profit > 0 ? 'text-success' : 'text-danger');
+        document.getElementById('editMargin').textContent = item.actual_margin !== null ? Math.round(item.actual_margin * 100) + '%' : '-';
+        document.getElementById('editDays').textContent = item.days_to_sell !== null ? item.days_to_sell + 'd' : '-';
+        document.getElementById('editPPD').textContent = item.profit_per_day !== null ? '$' + item.profit_per_day : '-';
+    }
+}
+
+// Mark Sold quick action
+document.getElementById('markSoldBtn').addEventListener('click', () => {
+    form.status.value = 'Sold';
+    form.date_sold.value = new Date().toISOString().split('T')[0];
+    form.sold_for.focus();
+    document.getElementById('markSoldBtn').style.display = 'none';
+});
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const res = await fetch(`/api/items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (res.ok) {
+        window.location.href = '/inventory';
+    } else {
+        alert('Error saving item.');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Inventory - Onna's Flips{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-box-seam"></i> Inventory</h2>
+    <a href="/add" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Item</a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <label class="form-label mb-0 fw-bold">Filter:</label>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+                    <button type="button" class="btn btn-outline-warning" data-filter="Listed">Listed</button>
+                    <button type="button" class="btn btn-outline-success" data-filter="Sold">Sold</button>
+                </div>
+            </div>
+            <div class="col-auto ms-auto">
+                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Search items...">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Items Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" id="itemsTable">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="d-none d-md-table-cell">Bought</th>
+                    <th class="d-none d-md-table-cell">Sold</th>
+                    <th>Cost</th>
+                    <th>Sold For</th>
+                    <th>Profit</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody">
+                <tr><td colspan="8" class="text-center text-muted py-4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteItemName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allItems = [];
+let currentFilter = 'all';
+let deleteItemId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadItems();
+
+    // Filter buttons
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderItems();
+        });
+    });
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', renderItems);
+
+    // Delete confirmation
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
+        if (deleteItemId) {
+            await fetch(`/api/items/${deleteItemId}`, { method: 'DELETE' });
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            loadItems();
+        }
+    });
+});
+
+async function loadItems() {
+    const res = await fetch('/api/items');
+    allItems = await res.json();
+    renderItems();
+}
+
+function renderItems() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    let filtered = allItems;
+
+    if (currentFilter !== 'all') {
+        filtered = filtered.filter(i => i.status === currentFilter);
+    }
+    if (search) {
+        filtered = filtered.filter(i => i.description.toLowerCase().includes(search));
+    }
+
+    const tbody = document.getElementById('itemsBody');
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No items found.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(item => {
+        const profit = item.status === 'Sold' ? item.actual_profit : item.predicted_profit;
+        const profitClass = profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : '';
+        const statusBadge = item.status === 'Sold'
+            ? '<span class="badge bg-success">Sold</span>'
+            : '<span class="badge bg-warning text-dark">Listed</span>';
+
+        return `<tr>
+            <td>
+                <a href="/edit/${item.id}" class="text-decoration-none fw-medium">${item.description}</a>
+            </td>
+            <td class="d-none d-md-table-cell">${item.date_bought ? formatDate(item.date_bought) : '-'}</td>
+            <td class="d-none d-md-table-cell">${item.date_sold ? formatDate(item.date_sold) : '-'}</td>
+            <td>$${item.cost}</td>
+            <td>${item.sold_for ? '$' + item.sold_for : (item.listing_price ? '<small class="text-muted">asking $' + item.listing_price + '</small>' : '-')}</td>
+            <td class="${profitClass} fw-bold">${profit !== null ? '$' + profit : '-'}</td>
+            <td>${statusBadge}</td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    <a href="/edit/${item.id}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i></a>
+                    <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete(${item.id}, '${item.description.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function confirmDelete(id, name) {
+    deleteItemId = id;
+    document.getElementById('deleteItemName').textContent = name;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return (d.getMonth()+1) + '/' + d.getDate() + '/' + (d.getFullYear() % 100);
+}
+</script>
+{% endblock %}

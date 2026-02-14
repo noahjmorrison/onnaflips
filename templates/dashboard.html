@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Onna's Flips{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <a href="/add" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Item</a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-success"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-value text-success" id="totalProfit">$0</div>
+                <div class="stat-label">Total Profit</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary"><i class="bi bi-cart-check"></i></div>
+                <div class="stat-value text-primary" id="totalRevenue">$0</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-warning"><i class="bi bi-tags"></i></div>
+                <div class="stat-value" id="listedCount">0</div>
+                <div class="stat-label">Active Listings</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-info"><i class="bi bi-percent"></i></div>
+                <div class="stat-value" id="avgMargin">0%</div>
+                <div class="stat-label">Avg Margin</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-danger"><i class="bi bi-wallet2"></i></div>
+                <div class="stat-value" id="totalSpent">$0</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-secondary"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-value" id="avgDays">0</div>
+                <div class="stat-label">Avg Days to Sell</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-value" id="soldCount">0</div>
+                <div class="stat-label">Items Sold</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-warning"><i class="bi bi-piggy-bank"></i></div>
+                <div class="stat-value" id="currentInvested">$0</div>
+                <div class="stat-label">Currently Invested</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-graph-up"></i> Monthly Profit</div>
+            <div class="card-body">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-trophy"></i> Top 5 Items by Profit</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush" id="topItemsList">
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Efficiency Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-lightning"></i> Most Efficient Flips (Profit/Day)</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush" id="topEfficiencyList">
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-clock-history"></i> Currently Listed</div>
+            <div class="card-body" id="currentlyListed">
+                <p class="text-muted">Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', loadDashboard);
+
+async function loadDashboard() {
+    const [statsRes, listedRes] = await Promise.all([
+        fetch('/api/stats'),
+        fetch('/api/items?status=Listed')
+    ]);
+    const stats = await statsRes.json();
+    const listed = await listedRes.json();
+
+    // Update stat cards
+    document.getElementById('totalProfit').textContent = '$' + stats.total_profit.toLocaleString();
+    document.getElementById('totalRevenue').textContent = '$' + stats.total_revenue.toLocaleString();
+    document.getElementById('totalSpent').textContent = '$' + stats.total_spent.toLocaleString();
+    document.getElementById('listedCount').textContent = stats.listed_count;
+    document.getElementById('soldCount').textContent = stats.sold_count;
+    document.getElementById('avgMargin').textContent = Math.round(stats.avg_margin * 100) + '%';
+    document.getElementById('avgDays').textContent = stats.avg_days_to_sell;
+    document.getElementById('currentInvested').textContent = '$' + stats.current_invested.toLocaleString();
+
+    // Monthly profit chart
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    const months = stats.monthly_profit.map(m => {
+        const [y, mo] = m.month.split('-');
+        const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return names[parseInt(mo)-1] + ' ' + y;
+    });
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Monthly Profit',
+                data: stats.monthly_profit.map(m => m.profit),
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => '$' + ctx.parsed.y.toLocaleString()
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: v => '$' + v }
+                }
+            }
+        }
+    });
+
+    // Top items list
+    const topList = document.getElementById('topItemsList');
+    topList.innerHTML = stats.top_items.slice(0, 5).map((item, i) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><span class="badge bg-success me-2">#${i+1}</span>${item.description}</span>
+            <strong class="text-success">$${item.profit}</strong>
+        </li>
+    `).join('');
+
+    // Top efficiency list
+    const effList = document.getElementById('topEfficiencyList');
+    effList.innerHTML = stats.top_by_efficiency.slice(0, 5).map((item, i) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><span class="badge bg-primary me-2">#${i+1}</span>${item.description}</span>
+            <span><strong>$${item.profit_per_day}/day</strong> <small class="text-muted">(${item.days}d)</small></span>
+        </li>
+    `).join('');
+
+    // Currently listed items
+    const listedDiv = document.getElementById('currentlyListed');
+    if (listed.length === 0) {
+        listedDiv.innerHTML = '<p class="text-muted">No items currently listed.</p>';
+    } else {
+        listedDiv.innerHTML = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Item</th><th>Cost</th><th>Asking</th><th>Est. Profit</th></tr></thead><tbody>' +
+            listed.map(item => `
+                <tr>
+                    <td><a href="/edit/${item.id}">${item.description}</a></td>
+                    <td>$${item.cost}</td>
+                    <td>${item.listing_price ? '$' + item.listing_price : '-'}</td>
+                    <td class="text-success">${item.predicted_profit ? '$' + item.predicted_profit : '-'}</td>
+                </tr>
+            `).join('') +
+            '</tbody></table></div>';
+    }
+}
+</script>
+{% endblock %}
