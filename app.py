@@ -110,6 +110,11 @@ def tax_export_page():
     return render_template('tax_export.html')
 
 
+@app.route('/analytics')
+def analytics_page():
+    return render_template('analytics.html')
+
+
 # --- API Routes ---
 
 @app.route('/api/items', methods=['GET'])
@@ -231,6 +236,208 @@ def get_stats():
             {'description': i.description, 'profit_per_day': i.profit_per_day, 'days': i.days_to_sell}
             for i in top_by_efficiency
         ],
+    })
+
+
+@app.route('/api/analytics', methods=['GET'])
+def get_analytics():
+    from collections import defaultdict
+    today = date.today()
+
+    all_items = Item.query.all()
+    sold = [i for i in all_items if i.status == 'Sold']
+    listed = [i for i in all_items if i.status == 'Listed']
+
+    total_cost = sum(i.cost or 0 for i in sold)
+    total_revenue = sum(i.sold_for or 0 for i in sold)
+    total_profit = sum(i.actual_profit or 0 for i in sold)
+
+    # --- Category Breakdown ---
+    categories = defaultdict(list)
+    for i in sold:
+        desc = i.description.lower()
+        if 'table' in desc or 'desk' in desc:
+            categories['Tables/Desks'].append(i)
+        elif 'chair' in desc or 'stool' in desc:
+            categories['Chairs/Seating'].append(i)
+        elif 'dresser' in desc or 'night stand' in desc or 'sideboard' in desc:
+            categories['Dressers/Storage'].append(i)
+        elif 'mirror' in desc or 'picture' in desc:
+            categories['Decor/Wall Art'].append(i)
+        elif 'rug' in desc:
+            categories['Rugs'].append(i)
+        elif 'bench' in desc or 'ottoman' in desc:
+            categories['Benches/Ottomans'].append(i)
+        elif 'hutch' in desc or 'shelf' in desc:
+            categories['Hutch/Shelving'].append(i)
+        elif 'lamp' in desc:
+            categories['Lighting'].append(i)
+        else:
+            categories['Other'].append(i)
+
+    cat_data = []
+    for cat, items_list in sorted(categories.items(), key=lambda x: sum(i.actual_profit or 0 for i in x[1]), reverse=True):
+        tp = sum(i.actual_profit or 0 for i in items_list)
+        avg_p = tp / len(items_list)
+        avg_cost = sum(i.cost or 0 for i in items_list) / len(items_list)
+        d = [i.days_to_sell for i in items_list if i.days_to_sell and i.days_to_sell > 0]
+        avg_days = round(sum(d) / len(d), 1) if d else 0
+        cat_data.append({
+            'category': cat, 'count': len(items_list),
+            'total_profit': round(tp), 'avg_profit': round(avg_p),
+            'avg_cost': round(avg_cost), 'avg_days': avg_days,
+        })
+
+    # --- Cost Bracket ROI ---
+    cost_brackets_def = [('Free ($0)', 0, 0), ('$1-15', 1, 15), ('$16-30', 16, 30),
+                         ('$31-50', 31, 50), ('$51+', 51, 99999)]
+    cost_brackets = []
+    for label, lo, hi in cost_brackets_def:
+        b = [i for i in sold if i.cost is not None and lo <= i.cost <= hi]
+        if b:
+            tp = sum(i.actual_profit or 0 for i in b)
+            roi_items = [i for i in b if i.cost and i.cost > 0 and i.actual_profit is not None]
+            avg_roi = round(sum(i.actual_profit / i.cost * 100 for i in roi_items) / len(roi_items)) if roi_items else 0
+            cost_brackets.append({
+                'bracket': label, 'count': len(b), 'total_profit': round(tp),
+                'avg_profit': round(tp / len(b)), 'avg_roi': avg_roi,
+            })
+
+    # --- Sell-Through Speed ---
+    speed_def = [('Same day', 0, 1), ('Quick (2-7d)', 2, 7), ('Medium (8-14d)', 8, 14),
+                 ('Slow (15-30d)', 15, 30), ('Very slow (31+d)', 31, 99999)]
+    speed_data = []
+    for label, lo, hi in speed_def:
+        b = [i for i in sold if i.days_to_sell is not None and lo <= i.days_to_sell <= hi]
+        if b:
+            tp = sum(i.actual_profit or 0 for i in b)
+            speed_data.append({
+                'bracket': label, 'count': len(b),
+                'total_profit': round(tp), 'avg_profit': round(tp / len(b)),
+            })
+
+    # --- Price Bracket (sale price) ---
+    price_def = [('$0-50', 0, 50), ('$51-100', 51, 100), ('$101-200', 101, 200),
+                 ('$201-300', 201, 300), ('$300+', 301, 99999)]
+    price_brackets = []
+    for label, lo, hi in price_def:
+        b = [i for i in sold if i.sold_for and lo <= i.sold_for <= hi]
+        if b:
+            tp = sum(i.actual_profit or 0 for i in b)
+            d = [i.days_to_sell for i in b if i.days_to_sell and i.days_to_sell > 0]
+            price_brackets.append({
+                'bracket': label, 'count': len(b),
+                'total_profit': round(tp), 'avg_profit': round(tp / len(b)),
+                'avg_days': round(sum(d) / len(d), 1) if d else 0,
+            })
+
+    # --- Negotiation Analysis ---
+    negotiated = [i for i in sold if i.listing_price and i.listing_price > 0 and i.sold_for]
+    total_asked = sum(i.listing_price for i in negotiated) if negotiated else 0
+    total_got = sum(i.sold_for for i in negotiated) if negotiated else 0
+    above = [i for i in negotiated if i.sold_for > i.listing_price]
+    at_price = [i for i in negotiated if i.sold_for == i.listing_price]
+    below = [i for i in negotiated if i.sold_for < i.listing_price]
+    negotiation = {
+        'total_items': len(negotiated),
+        'total_asked': round(total_asked), 'total_got': round(total_got),
+        'avg_discount_pct': round((1 - total_got / total_asked) * 100, 1) if total_asked else 0,
+        'above_asking': len(above), 'at_asking': len(at_price), 'below_asking': len(below),
+        'above_items': [{'desc': i.description, 'asked': i.listing_price, 'got': i.sold_for,
+                         'bonus': round(i.sold_for - i.listing_price)} for i in above],
+    }
+
+    # --- Day of Week ---
+    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    day_stats = {d: {'count': 0, 'profit': 0} for d in day_names}
+    for item in sold:
+        if item.date_sold:
+            day = day_names[item.date_sold.weekday()]
+            day_stats[day]['count'] += 1
+            day_stats[day]['profit'] += item.actual_profit or 0
+    dow_data = [{'day': d, 'count': s['count'], 'profit': round(s['profit']),
+                 'avg_profit': round(s['profit'] / s['count']) if s['count'] else 0}
+                for d, s in day_stats.items() if s['count'] > 0]
+
+    # --- Inventory Aging ---
+    aging = []
+    for i in sorted(listed, key=lambda x: (today - x.date_bought).days if x.date_bought else 0, reverse=True):
+        age = (today - i.date_bought).days if i.date_bought else 0
+        aging.append({
+            'id': i.id, 'description': i.description, 'age_days': age,
+            'cost': i.cost, 'listing_price': i.listing_price,
+            'predicted_profit': i.predicted_profit,
+            'status': 'Stale' if age > 60 else 'Aging' if age > 30 else 'Fresh',
+        })
+
+    # --- Best & Worst Flips ---
+    sorted_profit = sorted([i for i in sold if i.actual_profit is not None],
+                           key=lambda x: x.actual_profit, reverse=True)
+    best_flips = [{'desc': i.description, 'cost': i.cost, 'sold': i.sold_for,
+                   'profit': i.actual_profit, 'days': i.days_to_sell,
+                   'margin': round(i.actual_margin * 100) if i.actual_margin else 0}
+                  for i in sorted_profit[:5]]
+    worst_flips = [{'desc': i.description, 'cost': i.cost, 'sold': i.sold_for,
+                    'profit': i.actual_profit, 'days': i.days_to_sell,
+                    'margin': round(i.actual_margin * 100) if i.actual_margin else 0}
+                   for i in sorted_profit[-3:]]
+
+    # --- ROI Champions ---
+    roi_items = sorted([i for i in sold if i.cost and i.cost > 0 and i.actual_profit is not None],
+                       key=lambda x: x.actual_profit / x.cost, reverse=True)
+    roi_champs = [{'desc': i.description, 'cost': i.cost, 'sold': i.sold_for,
+                   'roi': round(i.actual_profit / i.cost * 100)}
+                  for i in roi_items[:7]]
+
+    # --- Speed Demons ---
+    fast = sorted([i for i in sold if i.days_to_sell is not None and i.days_to_sell >= 0],
+                  key=lambda x: x.days_to_sell)
+    speed_demons = [{'desc': i.description, 'days': i.days_to_sell,
+                     'profit': i.actual_profit, 'ppd': i.profit_per_day}
+                    for i in fast[:7]]
+
+    # --- Business Scorecard ---
+    all_bought = [i.date_bought for i in sold if i.date_bought]
+    all_sold_dates = [i.date_sold for i in sold if i.date_sold]
+    days_biz = (max(all_sold_dates) - min(all_bought)).days if all_bought and all_sold_dates else 1
+    margins = [i.actual_margin for i in sold if i.actual_margin is not None]
+    avg_margin = round(sum(margins) / len(margins) * 100) if margins else 0
+    biggest = max(sold, key=lambda x: x.actual_profit or 0) if sold else None
+    fastest_item = min([i for i in sold if i.days_to_sell and i.days_to_sell > 0],
+                       key=lambda x: x.days_to_sell, default=None)
+
+    scorecard = {
+        'days_in_business': days_biz,
+        'weekly_profit': round(total_profit / max(days_biz / 7, 1)),
+        'monthly_profit': round(total_profit / max(days_biz / 30, 1)),
+        'annualized_profit': round(total_profit / max(days_biz / 365, 1)),
+        'avg_flip_cost': round(total_cost / len(sold)) if sold else 0,
+        'avg_sale_price': round(total_revenue / len(sold)) if sold else 0,
+        'money_multiplier': round(total_revenue / total_cost, 1) if total_cost else 0,
+        'profit_per_dollar': round(total_profit / total_cost, 2) if total_cost else 0,
+        'items_per_week': round(len(sold) / max(days_biz / 7, 1), 1),
+        'avg_margin': avg_margin,
+        'biggest_win': f"{biggest.description} (${biggest.actual_profit:.0f})" if biggest else 'N/A',
+        'fastest_flip': f"{fastest_item.description} ({fastest_item.days_to_sell}d)" if fastest_item else 'N/A',
+        'total_items_sold': len(sold),
+        'total_invested': round(total_cost),
+        'total_revenue': round(total_revenue),
+        'total_profit': round(total_profit),
+    }
+
+    return jsonify({
+        'categories': cat_data,
+        'cost_brackets': cost_brackets,
+        'speed_analysis': speed_data,
+        'price_brackets': price_brackets,
+        'negotiation': negotiation,
+        'day_of_week': dow_data,
+        'inventory_aging': aging,
+        'best_flips': best_flips,
+        'worst_flips': worst_flips,
+        'roi_champions': roi_champs,
+        'speed_demons': speed_demons,
+        'scorecard': scorecard,
     })
 
 
@@ -446,189 +653,6 @@ def generate_tax_pdf():
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]))
         elements.append(inv_table)
-
-    # === WILD ANALYSIS ===
-    if sold_items:
-        elements.append(Spacer(1, 0.3*inch))
-        wild_title = ParagraphStyle('WildTitle', parent=styles['Heading1'], fontSize=16,
-                                     textColor=colors.HexColor('#1a1a2e'))
-        elements.append(Paragraph("Wild Analysis", wild_title))
-        elements.append(Spacer(1, 0.1*inch))
-
-        # --- 1. Best & Worst Flips ---
-        elements.append(Paragraph("Best & Worst Flips", styles['Heading3']))
-        sorted_by_profit = sorted([i for i in sold_items if i.actual_profit is not None],
-                                   key=lambda x: x.actual_profit, reverse=True)
-        bw_data = [['Rank', 'Item', 'Cost', 'Sold For', 'Profit', 'Margin']]
-        for i, item in enumerate(sorted_by_profit[:5], 1):
-            margin = f'{item.actual_margin*100:.0f}%' if item.actual_margin else 'N/A'
-            bw_data.append([f'#{i}', item.description[:30], f'${item.cost:,.0f}',
-                           f'${item.sold_for:,.0f}', f'${item.actual_profit:,.0f}', margin])
-        if len(sorted_by_profit) > 5:
-            bw_data.append(['', '', '', '', '', ''])
-            for i, item in enumerate(sorted_by_profit[-3:], 1):
-                margin = f'{item.actual_margin*100:.0f}%' if item.actual_margin else 'N/A'
-                bw_data.append([f'Worst #{i}', item.description[:30], f'${item.cost:,.0f}',
-                               f'${item.sold_for:,.0f}' if item.sold_for else '-',
-                               f'${item.actual_profit:,.0f}' if item.actual_profit else '-', margin])
-
-        bw_table = Table(bw_data, colWidths=[0.7*inch, 2*inch, 0.7*inch, 0.8*inch, 0.7*inch, 0.7*inch])
-        bw_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28a745')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(bw_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # --- 2. Speed Demons (Fastest Flips) ---
-        elements.append(Paragraph("Speed Demons - Fastest Flips", styles['Heading3']))
-        fast_flips = sorted([i for i in sold_items if i.days_to_sell is not None and i.days_to_sell >= 0],
-                           key=lambda x: x.days_to_sell)
-        speed_data = [['Item', 'Days', 'Profit', '$/Day']]
-        for item in fast_flips[:7]:
-            ppd = f'${item.profit_per_day:,.0f}' if item.profit_per_day else 'N/A'
-            speed_data.append([item.description[:35], str(item.days_to_sell),
-                              f'${item.actual_profit:,.0f}' if item.actual_profit else '-', ppd])
-        speed_table = Table(speed_data, colWidths=[2.5*inch, 0.7*inch, 0.8*inch, 0.8*inch])
-        speed_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#17a2b8')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(speed_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # --- 3. ROI Champions (Best Return on Investment) ---
-        elements.append(Paragraph("ROI Champions - Best Return on Investment", styles['Heading3']))
-        roi_items = sorted([i for i in sold_items if i.cost and i.cost > 0 and i.actual_profit is not None],
-                          key=lambda x: x.actual_profit / x.cost, reverse=True)
-        roi_data = [['Item', 'Cost', 'Sold For', 'ROI %']]
-        for item in roi_items[:7]:
-            roi = (item.actual_profit / item.cost) * 100
-            roi_data.append([item.description[:35], f'${item.cost:,.0f}',
-                           f'${item.sold_for:,.0f}', f'{roi:,.0f}%'])
-        roi_table = Table(roi_data, colWidths=[2.5*inch, 0.8*inch, 0.8*inch, 0.8*inch])
-        roi_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6f42c1')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(roi_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # --- 4. Price Bracket Analysis ---
-        elements.append(Paragraph("Price Bracket Analysis - Where the Money Is", styles['Heading3']))
-        brackets = {'$0-25': (0, 25), '$26-50': (26, 50), '$51-100': (51, 100),
-                     '$101-200': (101, 200), '$201-300': (201, 300), '$300+': (301, 99999)}
-        bracket_data = [['Sale Price Range', 'Items', 'Avg Profit', 'Avg Days', 'Total Profit']]
-        for label, (lo, hi) in brackets.items():
-            b_items = [i for i in sold_items if i.sold_for and lo <= i.sold_for <= hi]
-            if b_items:
-                avg_p = sum(i.actual_profit or 0 for i in b_items) / len(b_items)
-                d_list = [i.days_to_sell for i in b_items if i.days_to_sell and i.days_to_sell > 0]
-                avg_d = f'{sum(d_list)/len(d_list):.0f}' if d_list else 'N/A'
-                tot_p = sum(i.actual_profit or 0 for i in b_items)
-                bracket_data.append([label, str(len(b_items)), f'${avg_p:,.0f}', avg_d, f'${tot_p:,.0f}'])
-        bracket_table = Table(bracket_data, colWidths=[1.2*inch, 0.7*inch, 1*inch, 0.8*inch, 1*inch])
-        bracket_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#fd7e14')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(bracket_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # --- 5. Day of Week Analysis ---
-        elements.append(Paragraph("Best Day to Sell", styles['Heading3']))
-        day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        day_stats = {d: {'count': 0, 'profit': 0} for d in day_names}
-        for item in sold_items:
-            if item.date_sold:
-                day = day_names[item.date_sold.weekday()]
-                day_stats[day]['count'] += 1
-                day_stats[day]['profit'] += item.actual_profit or 0
-        dow_data = [['Day', 'Sales', 'Total Profit', 'Avg Profit']]
-        for day in day_names:
-            s = day_stats[day]
-            if s['count'] > 0:
-                dow_data.append([day, str(s['count']), f'${s["profit"]:,.0f}',
-                               f'${s["profit"]/s["count"]:,.0f}'])
-        dow_table = Table(dow_data, colWidths=[1.2*inch, 0.8*inch, 1*inch, 1*inch])
-        dow_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e83e8c')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(dow_table)
-        elements.append(Spacer(1, 0.2*inch))
-
-        # --- 6. Fun Facts / Business Scorecard ---
-        elements.append(Paragraph("Business Scorecard", styles['Heading3']))
-
-        total_days_in_biz = 0
-        all_bought = [i.date_bought for i in sold_items if i.date_bought]
-        all_sold_dates = [i.date_sold for i in sold_items if i.date_sold]
-        if all_bought and all_sold_dates:
-            total_days_in_biz = (max(all_sold_dates) - min(all_bought)).days or 1
-
-        profit_per_week = total_profit / max(total_days_in_biz / 7, 1)
-        avg_flip_cost = total_cost / len(sold_items) if sold_items else 0
-        biggest_single = max(sold_items, key=lambda x: x.actual_profit or 0)
-        fastest = min([i for i in sold_items if i.days_to_sell and i.days_to_sell > 0],
-                     key=lambda x: x.days_to_sell, default=None)
-
-        facts = [
-            ['Metric', 'Value'],
-            ['Days in Business', str(total_days_in_biz)],
-            ['Profit per Week', f'${profit_per_week:,.0f}'],
-            ['Avg Cost per Flip', f'${avg_flip_cost:,.0f}'],
-            ['Avg Sale Price', f'${total_revenue/len(sold_items):,.0f}' if sold_items else 'N/A'],
-            ['Biggest Win', f'{biggest_single.description} (${biggest_single.actual_profit:,.0f})' if biggest_single else 'N/A'],
-            ['Fastest Flip', f'{fastest.description} ({fastest.days_to_sell}d, ${fastest.actual_profit:,.0f})' if fastest else 'N/A'],
-            ['Items Flipped per Week', f'{len(sold_items)/max(total_days_in_biz/7, 1):.1f}'],
-            ['Money Multiplier', f'{total_revenue/total_cost:.1f}x' if total_cost else 'N/A'],
-            ['Profit if Reinvested at Avg Margin',
-             f'${total_profit * (1 + sum(margins)/len(margins)):,.0f}' if margins else 'N/A'],
-        ]
-        facts_table = Table(facts, colWidths=[2.5*inch, 3.5*inch])
-        facts_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a1a2e')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-        elements.append(facts_table)
 
     doc.build(elements)
     buf.seek(0)

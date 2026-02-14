@@ -9,16 +9,32 @@
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <!-- Mobile Bottom Nav (visible on small screens only) -->
+    <nav class="mobile-bottom-nav d-md-none">
+        <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i><span>Home</span>
+        </a>
+        <a href="/inventory" class="mobile-nav-item {% if '/inventory' in request.path %}active{% endif %}">
+            <i class="bi bi-box-seam"></i><span>Items</span>
+        </a>
+        <a href="/add" class="mobile-nav-item mobile-nav-add {% if '/add' in request.path %}active{% endif %}">
+            <i class="bi bi-plus-lg"></i><span>Add</span>
+        </a>
+        <a href="/analytics" class="mobile-nav-item {% if '/analytics' in request.path %}active{% endif %}">
+            <i class="bi bi-bar-chart-line"></i><span>Insights</span>
+        </a>
+        <a href="/tax-export" class="mobile-nav-item {% if '/tax-export' in request.path %}active{% endif %}">
+            <i class="bi bi-file-pdf"></i><span>Export</span>
+        </a>
+    </nav>
+
+    <!-- Desktop Navbar (hidden on small screens) -->
+    <nav class="navbar navbar-expand-lg sticky-top d-none d-md-flex">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">
                 <i class="bi bi-shop"></i> Onna's Flips
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
@@ -35,18 +51,33 @@
                             <i class="bi bi-plus-circle"></i> Add Item
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/analytics' in request.path %}active{% endif %}" href="/analytics">
+                            <i class="bi bi-bar-chart-line"></i> Wild Analysis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if '/tax-export' in request.path %}active{% endif %}" href="/tax-export">
+                            <i class="bi bi-file-earmark-pdf"></i> Tax Export
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
+    <!-- Mobile Header -->
+    <div class="mobile-header d-md-none">
+        <span class="fw-bold"><i class="bi bi-shop text-success"></i> Onna's Flips</span>
+    </div>
+
     <!-- Main Content -->
-    <main class="container py-4">
+    <main class="container py-3 py-md-4 main-content">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center py-3 mt-auto">
+    <!-- Footer (desktop only) -->
+    <footer class="text-center py-3 mt-auto d-none d-md-block">
         <small class="text-muted">Onna's Flips &mdash; Furniture Flipping Tracker</small>
     </footer>
 

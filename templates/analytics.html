@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+{% block title %}Wild Analysis - Onna's Flips{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-bar-chart-line"></i> Wild Analysis</h2>
+
+<!-- Business Scorecard -->
+<div class="card analysis-card mb-4" style="border-left-color: #1a1a2e;">
+    <div class="card-header"><i class="bi bi-trophy"></i> Business Scorecard</div>
+    <div class="card-body" id="scorecardBody">
+        <p class="text-muted">Loading...</p>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #28a745;">
+            <div class="card-header"><i class="bi bi-tags"></i> Profit by Category</div>
+            <div class="card-body"><canvas id="categoryChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #17a2b8;">
+            <div class="card-header"><i class="bi bi-clock"></i> Sell-Through Speed</div>
+            <div class="card-body"><canvas id="speedChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #6f42c1;">
+            <div class="card-header"><i class="bi bi-wallet2"></i> Cost Bracket ROI</div>
+            <div class="card-body"><canvas id="costChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #e83e8c;">
+            <div class="card-header"><i class="bi bi-calendar-week"></i> Best Day to Sell</div>
+            <div class="card-body"><canvas id="dowChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- Negotiation Analysis -->
+<div class="card analysis-card mb-4" style="border-left-color: #fd7e14;">
+    <div class="card-header"><i class="bi bi-chat-left-dots"></i> Negotiation Analysis</div>
+    <div class="card-body" id="negotiationBody">
+        <p class="text-muted">Loading...</p>
+    </div>
+</div>
+
+<!-- Tables Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #28a745;">
+            <div class="card-header"><i class="bi bi-star"></i> Top 5 Best Flips</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="bestTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #6f42c1;">
+            <div class="card-header"><i class="bi bi-graph-up-arrow"></i> ROI Champions</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="roiTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #17a2b8;">
+            <div class="card-header"><i class="bi bi-lightning"></i> Speed Demons (Fastest Flips)</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="speedTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card analysis-card h-100" style="border-left-color: #dc3545;">
+            <div class="card-header"><i class="bi bi-emoji-frown"></i> Worst 3 Flips</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="worstTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Price Bracket -->
+<div class="card analysis-card mb-4" style="border-left-color: #fd7e14;">
+    <div class="card-header"><i class="bi bi-cash-coin"></i> Sale Price Brackets - Where the Money Is</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="priceTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Aging -->
+<div class="card analysis-card mb-4" style="border-left-color: #dc3545;">
+    <div class="card-header"><i class="bi bi-hourglass-split"></i> Inventory Aging - Items That Need Attention</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="agingTable"></table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', loadAnalytics);
+
+async function loadAnalytics() {
+    const res = await fetch('/api/analytics');
+    const data = await res.json();
+
+    renderScorecard(data.scorecard);
+    renderCategoryChart(data.categories);
+    renderSpeedChart(data.speed_analysis);
+    renderCostChart(data.cost_brackets);
+    renderDowChart(data.day_of_week);
+    renderNegotiation(data.negotiation);
+    renderBestFlips(data.best_flips);
+    renderWorstFlips(data.worst_flips);
+    renderROI(data.roi_champions);
+    renderSpeedDemons(data.speed_demons);
+    renderPriceBrackets(data.price_brackets);
+    renderAging(data.inventory_aging);
+}
+
+function renderScorecard(s) {
+    document.getElementById('scorecardBody').innerHTML = `
+        <div class="row">
+            <div class="col-6 col-md-3">
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Annualized Profit</div>
+                    <div class="scorecard-value text-success">$${s.annualized_profit.toLocaleString()}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Weekly Profit</div>
+                    <div class="scorecard-value">$${s.weekly_profit.toLocaleString()}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Monthly Profit</div>
+                    <div class="scorecard-value">$${s.monthly_profit.toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Money Multiplier</div>
+                    <div class="scorecard-value text-primary">${s.money_multiplier}x</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Profit per $1 Spent</div>
+                    <div class="scorecard-value">$${s.profit_per_dollar}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Avg Margin</div>
+                    <div class="scorecard-value">${s.avg_margin}%</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Items Sold</div>
+                    <div class="scorecard-value">${s.total_items_sold}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Items/Week</div>
+                    <div class="scorecard-value">${s.items_per_week}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Days in Business</div>
+                    <div class="scorecard-value">${s.days_in_business}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Avg Flip Cost</div>
+                    <div class="scorecard-value">$${s.avg_flip_cost}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Biggest Win</div>
+                    <div class="scorecard-value" style="font-size:0.85rem">${s.biggest_win}</div>
+                </div>
+                <div class="scorecard-metric">
+                    <div class="scorecard-label">Fastest Flip</div>
+                    <div class="scorecard-value" style="font-size:0.85rem">${s.fastest_flip}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderCategoryChart(cats) {
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: cats.map(c => c.category),
+            datasets: [{
+                label: 'Total Profit',
+                data: cats.map(c => c.total_profit),
+                backgroundColor: ['#28a745','#17a2b8','#6f42c1','#fd7e14','#e83e8c','#20c997','#6610f2','#ffc107','#dc3545'],
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false },
+                tooltip: { callbacks: { label: ctx => `$${ctx.parsed.x} (${cats[ctx.dataIndex].count} items, avg $${cats[ctx.dataIndex].avg_profit})` } }
+            },
+            scales: { x: { ticks: { callback: v => '$' + v } } }
+        }
+    });
+}
+
+function renderSpeedChart(speed) {
+    new Chart(document.getElementById('speedChart'), {
+        type: 'bar',
+        data: {
+            labels: speed.map(s => s.bracket),
+            datasets: [
+                { label: 'Items', data: speed.map(s => s.count), backgroundColor: '#17a2b8', borderRadius: 6 },
+                { label: 'Avg Profit', data: speed.map(s => s.avg_profit), backgroundColor: '#28a745', borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label === 'Avg Profit' ? '$' + ctx.parsed.y : ctx.parsed.y + ' items' } } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderCostChart(brackets) {
+    new Chart(document.getElementById('costChart'), {
+        type: 'bar',
+        data: {
+            labels: brackets.map(b => b.bracket),
+            datasets: [
+                { label: 'Total Profit', data: brackets.map(b => b.total_profit), backgroundColor: '#6f42c1', borderRadius: 6 },
+                { label: 'Avg ROI %', data: brackets.map(b => b.avg_roi), backgroundColor: '#ffc107', borderRadius: 6, hidden: true }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { tooltip: { callbacks: {
+                afterLabel: (ctx) => `${brackets[ctx.dataIndex].count} items | ROI: ${brackets[ctx.dataIndex].avg_roi}%`
+            }}},
+            scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + v } } }
+        }
+    });
+}
+
+function renderDowChart(dow) {
+    new Chart(document.getElementById('dowChart'), {
+        type: 'doughnut',
+        data: {
+            labels: dow.map(d => d.day),
+            datasets: [{
+                data: dow.map(d => d.profit),
+                backgroundColor: ['#28a745','#17a2b8','#6f42c1','#fd7e14','#e83e8c','#ffc107','#dc3545'],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: ctx => `${ctx.label}: $${ctx.parsed} (${dow[ctx.dataIndex].count} sales, avg $${dow[ctx.dataIndex].avg_profit})` } }
+            }
+        }
+    });
+}
+
+function renderNegotiation(neg) {
+    let aboveHtml = '';
+    if (neg.above_items.length > 0) {
+        aboveHtml = `<div class="mt-3"><h6 class="text-success">Items Sold ABOVE Asking:</h6>` +
+            neg.above_items.map(i => `<div class="d-flex justify-content-between border-bottom py-1">
+                <span>${i.desc}</span>
+                <span><small class="text-muted">Asked $${i.asked}</small> &rarr; <strong class="text-success">Got $${i.got}</strong> <span class="badge bg-success">+$${i.bonus}</span></span>
+            </div>`).join('') + '</div>';
+    }
+
+    document.getElementById('negotiationBody').innerHTML = `
+        <div class="row text-center mb-3">
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">Total Asked</div>
+                <div class="fw-bold fs-6">$${neg.total_asked.toLocaleString()}</div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">Total Got</div>
+                <div class="fw-bold fs-6">$${neg.total_got.toLocaleString()}</div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">Avg Discount</div>
+                <div class="fw-bold fs-6 text-danger">${neg.avg_discount_pct}%</div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">Above Asking</div>
+                <div class="fw-bold fs-6 text-success">${neg.above_asking}</div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">At Asking</div>
+                <div class="fw-bold fs-6">${neg.at_asking}</div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="text-muted small">Below Asking</div>
+                <div class="fw-bold fs-6 text-warning">${neg.below_asking}</div>
+            </div>
+        </div>
+        ${aboveHtml}
+    `;
+}
+
+function renderBestFlips(items) {
+    document.getElementById('bestTable').innerHTML = `
+        <thead><tr><th>#</th><th>Item</th><th>Cost</th><th>Sold</th><th>Profit</th></tr></thead>
+        <tbody>${items.map((i, idx) => `<tr>
+            <td><span class="badge bg-success">${idx+1}</span></td>
+            <td>${i.desc}</td><td>$${i.cost}</td><td>$${i.sold}</td>
+            <td class="text-success fw-bold">$${i.profit}</td>
+        </tr>`).join('')}</tbody>`;
+}
+
+function renderWorstFlips(items) {
+    document.getElementById('worstTable').innerHTML = `
+        <thead><tr><th>#</th><th>Item</th><th>Cost</th><th>Sold</th><th>Profit</th></tr></thead>
+        <tbody>${items.map((i, idx) => `<tr>
+            <td><span class="badge bg-danger">${idx+1}</span></td>
+            <td>${i.desc}</td><td>$${i.cost}</td><td>${i.sold ? '$'+i.sold : '-'}</td>
+            <td class="${i.profit < 0 ? 'text-danger' : ''} fw-bold">${i.profit !== null ? '$'+i.profit : '-'}</td>
+        </tr>`).join('')}</tbody>`;
+}
+
+function renderROI(items) {
+    document.getElementById('roiTable').innerHTML = `
+        <thead><tr><th>#</th><th>Item</th><th>Cost</th><th>Sold</th><th>ROI</th></tr></thead>
+        <tbody>${items.map((i, idx) => `<tr>
+            <td><span class="badge bg-primary">${idx+1}</span></td>
+            <td>${i.desc}</td><td>$${i.cost}</td><td>$${i.sold}</td>
+            <td class="text-primary fw-bold">${i.roi}%</td>
+        </tr>`).join('')}</tbody>`;
+}
+
+function renderSpeedDemons(items) {
+    document.getElementById('speedTable').innerHTML = `
+        <thead><tr><th>#</th><th>Item</th><th>Days</th><th>Profit</th><th>$/Day</th></tr></thead>
+        <tbody>${items.map((i, idx) => `<tr>
+            <td><span class="badge bg-info">${idx+1}</span></td>
+            <td>${i.desc}</td><td>${i.days}d</td>
+            <td>$${i.profit}</td>
+            <td class="fw-bold">${i.ppd ? '$'+i.ppd : '-'}</td>
+        </tr>`).join('')}</tbody>`;
+}
+
+function renderPriceBrackets(brackets) {
+    document.getElementById('priceTable').innerHTML = `
+        <thead><tr><th>Price Range</th><th>Items</th><th>Avg Profit</th><th>Avg Days</th><th>Total Profit</th></tr></thead>
+        <tbody>${brackets.map(b => `<tr>
+            <td class="fw-bold">${b.bracket}</td><td>${b.count}</td>
+            <td>$${b.avg_profit}</td><td>${b.avg_days}d</td>
+            <td class="text-success fw-bold">$${b.total_profit}</td>
+        </tr>`).join('')}</tbody>`;
+}
+
+function renderAging(items) {
+    if (items.length === 0) {
+        document.getElementById('agingTable').innerHTML = '<tbody><tr><td class="text-center text-muted py-3">No listed items.</td></tr></tbody>';
+        return;
+    }
+    document.getElementById('agingTable').innerHTML = `
+        <thead><tr><th>Item</th><th>Age</th><th>Cost</th><th>Asking</th><th>Status</th></tr></thead>
+        <tbody>${items.map(i => `<tr>
+            <td><a href="/edit/${i.id}">${i.description}</a></td>
+            <td class="fw-bold">${i.age_days}d</td>
+            <td>$${i.cost}</td>
+            <td>${i.listing_price ? '$'+i.listing_price : '?'}</td>
+            <td><span class="badge ${i.status === 'Stale' ? 'bg-danger' : i.status === 'Aging' ? 'bg-warning text-dark' : 'bg-success'}">${i.status}${i.status === 'Stale' ? ' - Consider price drop!' : ''}</span></td>
+        </tr>`).join('')}</tbody>`;
+}
+</script>
+{% endblock %}
