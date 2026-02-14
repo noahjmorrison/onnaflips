@@ -109,6 +109,29 @@ main {
     vertical-align: middle;
 }
 
+/* Sortable columns */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.sortable:hover {
+    color: var(--brand-dark);
+    background-color: rgba(0,0,0,0.03);
+}
+
+.sort-icon {
+    font-size: 0.7rem;
+    opacity: 0.3;
+    margin-left: 3px;
+}
+
+.active-sort {
+    opacity: 1;
+    color: var(--brand-green);
+}
+
 /* Badges */
 .badge {
     font-weight: 500;

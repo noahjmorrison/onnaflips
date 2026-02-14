@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Tax Export - Onna's Flips{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2 class="mb-4"><i class="bi bi-file-earmark-pdf"></i> Tax Export</h2>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="text-muted mb-3">Generate a PDF report of all sold items for tax filing. Choose a date range to filter by sale date.</p>
+
+                <form id="exportForm" action="/api/tax-export" method="GET" target="_blank">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">From Date</label>
+                            <input type="date" class="form-control" name="start_date" id="startDate">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">To Date</label>
+                            <input type="date" class="form-control" name="end_date" id="endDate">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Include in report:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_sold" checked disabled>
+                            <label class="form-check-label">Sold items (always included)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="include_listed" id="includeListed" value="1">
+                            <label class="form-check-label">Currently listed items (unsold inventory)</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-download"></i> Download PDF Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="card">
+            <div class="card-header">Preview: Items in Date Range</div>
+            <div class="card-body" id="previewBody">
+                <p class="text-muted">Select a date range to preview.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Default to current tax year (Jan 1 - Dec 31)
+const now = new Date();
+const year = now.getFullYear();
+document.getElementById('startDate').value = `${year}-01-01`;
+document.getElementById('endDate').value = `${year}-12-31`;
+
+// Live preview
+['startDate', 'endDate', 'includeListed'].forEach(id => {
+    document.getElementById(id).addEventListener('change', loadPreview);
+});
+
+document.addEventListener('DOMContentLoaded', loadPreview);
+
+async function loadPreview() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const includeListed = document.getElementById('includeListed').checked;
+
+    const res = await fetch('/api/items');
+    const items = await res.json();
+
+    let filtered = items.filter(item => {
+        if (item.status === 'Sold') {
+            if (!item.date_sold) return false;
+            if (start && item.date_sold < start) return false;
+            if (end && item.date_sold > end) return false;
+            return true;
+        }
+        if (item.status === 'Listed' && includeListed) return true;
+        return false;
+    });
+
+    const sold = filtered.filter(i => i.status === 'Sold');
+    const listed = filtered.filter(i => i.status === 'Listed');
+    const totalCost = sold.reduce((s, i) => s + (i.cost || 0), 0);
+    const totalRevenue = sold.reduce((s, i) => s + (i.sold_for || 0), 0);
+    const totalProfit = sold.reduce((s, i) => s + (i.actual_profit || 0), 0);
+
+    const body = document.getElementById('previewBody');
+    body.innerHTML = `
+        <div class="row text-center mb-3">
+            <div class="col-4">
+                <div class="text-muted small">Items Sold</div>
+                <div class="fw-bold fs-5">${sold.length}</div>
+            </div>
+            <div class="col-4">
+                <div class="text-muted small">Total Revenue</div>
+                <div class="fw-bold fs-5">$${totalRevenue.toLocaleString()}</div>
+            </div>
+            <div class="col-4">
+                <div class="text-muted small">Total Profit</div>
+                <div class="fw-bold fs-5 text-success">$${totalProfit.toLocaleString()}</div>
+            </div>
+        </div>
+        <hr>
+        <div class="small text-muted">
+            Total cost of goods: $${totalCost.toLocaleString()}
+            ${listed.length > 0 ? `<br>Unsold inventory: ${listed.length} items ($${listed.reduce((s,i) => s + (i.cost||0), 0).toLocaleString()} invested)` : ''}
+        </div>
+    `;
+}
+</script>
+{% endblock %}

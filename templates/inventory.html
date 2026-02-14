@@ -4,7 +4,10 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-box-seam"></i> Inventory</h2>
-    <a href="/add" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Item</a>
+    <div class="d-flex gap-2">
+        <a href="/tax-export" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> Tax Export</a>
+        <a href="/add" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Item</a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -34,13 +37,13 @@
         <table class="table table-hover mb-0" id="itemsTable">
             <thead>
                 <tr>
-                    <th>Item</th>
-                    <th class="d-none d-md-table-cell">Bought</th>
-                    <th class="d-none d-md-table-cell">Sold</th>
-                    <th>Cost</th>
-                    <th>Sold For</th>
-                    <th>Profit</th>
-                    <th>Status</th>
+                    <th class="sortable" data-sort="description">Item <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable d-none d-md-table-cell" data-sort="date_bought">Bought <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable d-none d-md-table-cell" data-sort="date_sold">Sold <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable" data-sort="cost">Cost <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable" data-sort="sold_for">Sold For <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable" data-sort="profit">Profit <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                    <th class="sortable" data-sort="status">Status <i class="bi bi-arrow-down-up sort-icon"></i></th>
                     <th></th>
                 </tr>
             </thead>
@@ -76,6 +79,8 @@
 let allItems = [];
 let currentFilter = 'all';
 let deleteItemId = null;
+let sortColumn = 'date_bought';
+let sortDirection = 'desc';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadItems();
@@ -86,6 +91,28 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = btn.dataset.filter;
+            renderItems();
+        });
+    });
+
+    // Sortable column headers
+    document.querySelectorAll('.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.sort;
+            if (sortColumn === col) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = col;
+                sortDirection = 'asc';
+            }
+            // Update header icons
+            document.querySelectorAll('.sortable .sort-icon').forEach(icon => {
+                icon.className = 'bi bi-arrow-down-up sort-icon';
+            });
+            const icon = th.querySelector('.sort-icon');
+            icon.className = sortDirection === 'asc'
+                ? 'bi bi-arrow-up sort-icon active-sort'
+                : 'bi bi-arrow-down sort-icon active-sort';
             renderItems();
         });
     });
@@ -109,6 +136,53 @@ async function loadItems() {
     renderItems();
 }
 
+function getItemProfit(item) {
+    return item.status === 'Sold' ? item.actual_profit : item.predicted_profit;
+}
+
+function sortItems(items) {
+    return [...items].sort((a, b) => {
+        let valA, valB;
+
+        switch (sortColumn) {
+            case 'description':
+                valA = (a.description || '').toLowerCase();
+                valB = (b.description || '').toLowerCase();
+                break;
+            case 'date_bought':
+                valA = a.date_bought || '';
+                valB = b.date_bought || '';
+                break;
+            case 'date_sold':
+                valA = a.date_sold || '';
+                valB = b.date_sold || '';
+                break;
+            case 'cost':
+                valA = a.cost || 0;
+                valB = b.cost || 0;
+                break;
+            case 'sold_for':
+                valA = a.sold_for || a.listing_price || 0;
+                valB = b.sold_for || b.listing_price || 0;
+                break;
+            case 'profit':
+                valA = getItemProfit(a) || 0;
+                valB = getItemProfit(b) || 0;
+                break;
+            case 'status':
+                valA = a.status || '';
+                valB = b.status || '';
+                break;
+            default:
+                return 0;
+        }
+
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
 function renderItems() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     let filtered = allItems;
@@ -120,6 +194,8 @@ function renderItems() {
         filtered = filtered.filter(i => i.description.toLowerCase().includes(search));
     }
 
+    filtered = sortItems(filtered);
+
     const tbody = document.getElementById('itemsBody');
     if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No items found.</td></tr>';
@@ -127,7 +203,7 @@ function renderItems() {
     }
 
     tbody.innerHTML = filtered.map(item => {
-        const profit = item.status === 'Sold' ? item.actual_profit : item.predicted_profit;
+        const profit = getItemProfit(item);
         const profitClass = profit > 0 ? 'text-success' : profit < 0 ? 'text-danger' : '';
         const statusBadge = item.status === 'Sold'
             ? '<span class="badge bg-success">Sold</span>'
