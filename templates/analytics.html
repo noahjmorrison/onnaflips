@@ -6,7 +6,7 @@
 
 <!-- Business Scorecard -->
 <div class="card analysis-card mb-4" style="border-left-color: #1a1a2e;">
-    <div class="card-header"><i class="bi bi-trophy"></i> Business Scorecard</div>
+    <div class="card-header"><i class="bi bi-trophy"></i> Business Scorecard <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Business Scorecard</b><br>A high-level snapshot of your entire flipping business. Shows annualized projections, efficiency metrics, and key milestones.<br><br><em>Example: If you&apos;ve made $2,000 profit over 4 months, Annualized Profit projects ~$6,000/year. Money Multiplier of 4.5x means every $1 you spend comes back as $4.50. Items/Week tells you your selling pace &mdash; 2.5 means you flip about 2-3 items per week on average.</em>"></i></div>
     <div class="card-body" id="scorecardBody">
         <p class="text-muted">Loading...</p>
     </div>
@@ -16,13 +16,13 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #28a745;">
-            <div class="card-header"><i class="bi bi-tags"></i> Profit by Category</div>
+            <div class="card-header"><i class="bi bi-tags"></i> Profit by Category <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Profit by Category</b><br>Groups your sold items by type (furniture, decor, etc.) and shows total profit earned from each category. Helps you see which types of items are most profitable to flip.<br><br><em>Example: If &apos;Tables&apos; shows $800 profit from 3 items and &apos;Chairs&apos; shows $200 from 5 items, tables are clearly your money-makers even though you sell fewer of them. Focus your sourcing on the top categories!</em>"></i></div>
             <div class="card-body"><canvas id="categoryChart"></canvas></div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #17a2b8;">
-            <div class="card-header"><i class="bi bi-clock"></i> Sell-Through Speed</div>
+            <div class="card-header"><i class="bi bi-clock"></i> Sell-Through Speed <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Sell-Through Speed</b><br>Shows how many items sell within different time brackets (0-7 days, 8-14 days, 15-30 days, 30+ days) and the average profit for each speed tier. Faster flips mean your money is working harder.<br><br><em>Example: If 10 items sold in 0-7 days with $80 avg profit, and 5 items took 30+ days with $50 avg profit, your quick flips are both more frequent AND more profitable &mdash; a sign you&apos;re pricing those items well.</em>"></i></div>
             <div class="card-body"><canvas id="speedChart"></canvas></div>
         </div>
     </div>
@@ -31,13 +31,13 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #6f42c1;">
-            <div class="card-header"><i class="bi bi-wallet2"></i> Cost Bracket ROI</div>
+            <div class="card-header"><i class="bi bi-wallet2"></i> Cost Bracket ROI <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Cost Bracket ROI</b><br>Groups items by how much you paid for them ($0-25, $25-50, $50-100, $100+) and shows the total profit and average ROI (Return on Investment) for each bracket. Helps you decide where to invest your sourcing budget.<br><br><em>Example: Items costing $0-25 might show 500% ROI (bought a $5 item, sold for $30), while $100+ items show 150% ROI. The cheap items have higher percentage returns, but the expensive items may earn more dollars per flip.</em>"></i></div>
             <div class="card-body"><canvas id="costChart"></canvas></div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #e83e8c;">
-            <div class="card-header"><i class="bi bi-calendar-week"></i> Best Day to Sell</div>
+            <div class="card-header"><i class="bi bi-calendar-week"></i> Best Day to Sell <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Best Day to Sell</b><br>Breaks down your sales by day of the week to reveal which days generate the most profit and sales volume. Use this to time your listings and price drops.<br><br><em>Example: If Saturday shows $1,200 in profit from 8 sales and Tuesday shows $100 from 1 sale, weekends are clearly when your buyers are active. Consider posting new listings on Friday evening to catch weekend shoppers!</em>"></i></div>
             <div class="card-body"><canvas id="dowChart"></canvas></div>
         </div>
     </div>
@@ -45,7 +45,7 @@
 
 <!-- Negotiation Analysis -->
 <div class="card analysis-card mb-4" style="border-left-color: #fd7e14;">
-    <div class="card-header"><i class="bi bi-chat-left-dots"></i> Negotiation Analysis</div>
+    <div class="card-header"><i class="bi bi-chat-left-dots"></i> Negotiation Analysis <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Negotiation Analysis</b><br>Compares your listing price (what you asked) vs. the actual sale price (what you got). Shows how much buyers negotiate down on average, and highlights any items that sold ABOVE asking price.<br><br><em>Example: If Avg Discount is 15%, buyers typically talk you down 15% from your listing price. If you listed a dresser at $200 and sold it for $220, that appears in &apos;Above Asking&apos; &mdash; meaning demand was higher than expected. Consider raising your initial prices!</em>"></i></div>
     <div class="card-body" id="negotiationBody">
         <p class="text-muted">Loading...</p>
     </div>
@@ -55,7 +55,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #28a745;">
-            <div class="card-header"><i class="bi bi-star"></i> Top 5 Best Flips</div>
+            <div class="card-header"><i class="bi bi-star"></i> Top 5 Best Flips <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Top 5 Best Flips</b><br>Your five most profitable sales ranked by raw dollar profit (Sold Price minus Cost). These are your biggest wins &mdash; the items that made you the most money in a single flip.<br><br><em>Example: A couch bought for $20 and sold for $300 = $280 profit. That&apos;s a huge win! Study what made these items so profitable &mdash; was it the source, the timing, or the item type? Try to replicate these successes.</em>"></i></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0" id="bestTable"></table>
@@ -65,7 +65,7 @@
     </div>
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #6f42c1;">
-            <div class="card-header"><i class="bi bi-graph-up-arrow"></i> ROI Champions</div>
+            <div class="card-header"><i class="bi bi-graph-up-arrow"></i> ROI Champions <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>ROI Champions</b><br>Items ranked by Return on Investment percentage. ROI = (Profit &divide; Cost) &times; 100. High ROI means you turned a small investment into big returns &mdash; these are your most efficient flips.<br><br><em>Example: A vase bought for $2 and sold for $40 = 1,900% ROI. A couch bought for $50 and sold for $200 = 300% ROI. The vase wins on ROI% even though the couch made more dollars. Both are great, but ROI Champions shows where your money works hardest.</em>"></i></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0" id="roiTable"></table>
@@ -78,7 +78,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #17a2b8;">
-            <div class="card-header"><i class="bi bi-lightning"></i> Speed Demons (Fastest Flips)</div>
+            <div class="card-header"><i class="bi bi-lightning"></i> Speed Demons (Fastest Flips) <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Speed Demons</b><br>Your fastest-selling items ranked by fewest days from purchase to sale. Also shows profit-per-day ($/Day), which measures how fast each item earned money while you held it.<br><br><em>Example: A table bought and sold the same day (0 days) with $100 profit has incredible $/Day. A chair that took 3 days and made $60 = $20/day. Fast flips keep your capital moving &mdash; even a small profit in 1 day beats a bigger profit that takes months.</em>"></i></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0" id="speedTable"></table>
@@ -88,7 +88,7 @@
     </div>
     <div class="col-md-6">
         <div class="card analysis-card h-100" style="border-left-color: #dc3545;">
-            <div class="card-header"><i class="bi bi-emoji-frown"></i> Worst 3 Flips</div>
+            <div class="card-header"><i class="bi bi-emoji-frown"></i> Worst 3 Flips <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Worst 3 Flips</b><br>Your three least profitable sales ranked by lowest dollar profit. These might be items sold at a loss or with very thin margins. Learning from your worst flips is just as important as celebrating your best ones.<br><br><em>Example: A lamp bought for $30 and sold for $25 = -$5 loss. That&apos;s a flip that cost you money. Look for patterns &mdash; were these items overpriced at purchase, hard to sell, or in a category that just doesn&apos;t flip well?</em>"></i></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0" id="worstTable"></table>
@@ -100,7 +100,7 @@
 
 <!-- Price Bracket -->
 <div class="card analysis-card mb-4" style="border-left-color: #fd7e14;">
-    <div class="card-header"><i class="bi bi-cash-coin"></i> Sale Price Brackets - Where the Money Is</div>
+    <div class="card-header"><i class="bi bi-cash-coin"></i> Sale Price Brackets - Where the Money Is <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Sale Price Brackets</b><br>Groups your sold items by the final sale price range (e.g., $0-50, $50-100, $100-200, $200+). Shows how many items, average profit, average days to sell, and total profit for each price tier.<br><br><em>Example: The $100-200 bracket might have 8 items with avg $75 profit and 10 avg days to sell, while the $50-100 bracket has 15 items with $35 avg profit in 5 days. The cheaper bracket moves faster but the pricier bracket earns more per flip. Use this to decide your ideal price sweet spot.</em>"></i></div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-sm mb-0" id="priceTable"></table>
@@ -110,7 +110,7 @@
 
 <!-- Inventory Aging -->
 <div class="card analysis-card mb-4" style="border-left-color: #dc3545;">
-    <div class="card-header"><i class="bi bi-hourglass-split"></i> Inventory Aging - Items That Need Attention</div>
+    <div class="card-header"><i class="bi bi-hourglass-split"></i> Inventory Aging - Items That Need Attention <i class="bi bi-info-circle text-muted ms-1" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Inventory Aging</b><br>Shows all your currently listed (unsold) items ranked by how long they&apos;ve been sitting. Items are color-coded: <span style='color:#28a745'>Fresh</span> (under 14 days), <span style='color:#fd7e14'>Aging</span> (14-30 days), and <span style='color:#dc3545'>Stale</span> (30+ days). Stale items tie up your capital and may need a price drop.<br><br><em>Example: A dresser listed for 45 days at $150 is &apos;Stale&apos; &mdash; consider dropping the price to $120 or re-listing with new photos. Meanwhile, a table listed 5 days ago is &apos;Fresh&apos; and just needs more time. The goal is to keep inventory turning fast!</em>"></i></div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-sm mb-0" id="agingTable"></table>
@@ -122,7 +122,13 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', loadAnalytics);
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Bootstrap tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el, { trigger: 'hover focus', delay: { show: 200, hide: 100 } });
+    });
+    loadAnalytics();
+});
 
 async function loadAnalytics() {
     const res = await fetch('/api/analytics');
@@ -147,62 +153,66 @@ function renderScorecard(s) {
         <div class="row">
             <div class="col-6 col-md-3">
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Annualized Profit</div>
+                    <div class="scorecard-label">Annualized Profit <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Annualized Profit</b><br>Your total profit projected over a full year based on your current pace.<br><br><em>Example: If you made $2,000 in 4 months, annualized = $2,000 &times; (365 &divide; 120) = ~$6,083/year.</em>"></i></div>
                     <div class="scorecard-value text-success">$${s.annualized_profit.toLocaleString()}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Weekly Profit</div>
+                    <div class="scorecard-label">Weekly Profit <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Weekly Profit</b><br>Average profit earned per week since your first sale.<br><br><em>Example: $4,000 profit over 20 weeks = $200/week.</em>"></i></div>
                     <div class="scorecard-value">$${s.weekly_profit.toLocaleString()}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Monthly Profit</div>
+                    <div class="scorecard-label">Monthly Profit <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Monthly Profit</b><br>Average profit earned per month. Calculated as total profit divided by months in business.<br><br><em>Example: $4,000 profit over 5 months = $800/month.</em>"></i></div>
                     <div class="scorecard-value">$${s.monthly_profit.toLocaleString()}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Money Multiplier</div>
+                    <div class="scorecard-label">Money Multiplier <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Money Multiplier</b><br>Total revenue divided by total cost. Shows how many times over your investment has been returned.<br><br><em>Example: 4.5x means for every $1 you spent buying items, you got $4.50 back in sales. Higher is better!</em>"></i></div>
                     <div class="scorecard-value text-primary">${s.money_multiplier}x</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Profit per $1 Spent</div>
+                    <div class="scorecard-label">Profit per $1 Spent <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Profit per $1 Spent</b><br>Net profit for every dollar invested. This is the multiplier minus 1.<br><br><em>Example: If multiplier is 4.5x, profit per $1 = $3.50. You keep $3.50 profit on every $1 invested.</em>"></i></div>
                     <div class="scorecard-value">$${s.profit_per_dollar}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Avg Margin</div>
+                    <div class="scorecard-label">Avg Margin <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Average Margin</b><br>Average profit margin across all sold items. Margin = (Profit &divide; Sale Price) &times; 100.<br><br><em>Example: 75% margin means on average, 75 cents of every dollar you receive is pure profit. Only 25 cents covers your cost.</em>"></i></div>
                     <div class="scorecard-value">${s.avg_margin}%</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Items Sold</div>
+                    <div class="scorecard-label">Items Sold <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Items Sold</b><br>Total number of items you have successfully sold since starting the business."></i></div>
                     <div class="scorecard-value">${s.total_items_sold}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Items/Week</div>
+                    <div class="scorecard-label">Items/Week <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Items per Week</b><br>Average number of items sold each week. Higher = faster inventory turnover.<br><br><em>Example: 2.5 items/week means you sell about 2-3 items every week on average.</em>"></i></div>
                     <div class="scorecard-value">${s.items_per_week}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Days in Business</div>
+                    <div class="scorecard-label">Days in Business <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Days in Business</b><br>Total number of days since your first recorded purchase. Shows how long you&apos;ve been flipping!"></i></div>
                     <div class="scorecard-value">${s.days_in_business}</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Avg Flip Cost</div>
+                    <div class="scorecard-label">Avg Flip Cost <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Average Flip Cost</b><br>The average amount you spend to buy an item before flipping it.<br><br><em>Example: $25 avg flip cost means you typically spend about $25 per item at purchase.</em>"></i></div>
                     <div class="scorecard-value">$${s.avg_flip_cost}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Biggest Win</div>
+                    <div class="scorecard-label">Biggest Win <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Biggest Win</b><br>The single item that made you the most profit in one flip. Your all-time best sale!"></i></div>
                     <div class="scorecard-value" style="font-size:0.85rem">${s.biggest_win}</div>
                 </div>
                 <div class="scorecard-metric">
-                    <div class="scorecard-label">Fastest Flip</div>
+                    <div class="scorecard-label">Fastest Flip <i class="bi bi-info-circle text-muted" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Fastest Flip</b><br>The item that sold in the fewest days from purchase to sale. Shows how quickly your hottest item moved!"></i></div>
                     <div class="scorecard-value" style="font-size:0.85rem">${s.fastest_flip}</div>
                 </div>
             </div>
         </div>
     `;
+    // Initialize tooltips on dynamically rendered scorecard
+    document.querySelectorAll('#scorecardBody [data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el, { trigger: 'hover focus', delay: { show: 200, hide: 100 } });
+    });
 }
 
 function renderCategoryChart(cats) {
@@ -298,32 +308,36 @@ function renderNegotiation(neg) {
     document.getElementById('negotiationBody').innerHTML = `
         <div class="row text-center mb-3">
             <div class="col-4 col-md-2">
-                <div class="text-muted small">Total Asked</div>
+                <div class="text-muted small">Total Asked <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Total Asked</b><br>Sum of all your listing prices for sold items. This is what you hoped to get."></i></div>
                 <div class="fw-bold fs-6">$${neg.total_asked.toLocaleString()}</div>
             </div>
             <div class="col-4 col-md-2">
-                <div class="text-muted small">Total Got</div>
+                <div class="text-muted small">Total Got <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Total Got</b><br>Sum of all actual sale prices. This is what buyers actually paid you."></i></div>
                 <div class="fw-bold fs-6">$${neg.total_got.toLocaleString()}</div>
             </div>
             <div class="col-4 col-md-2">
-                <div class="text-muted small">Avg Discount</div>
+                <div class="text-muted small">Avg Discount <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Average Discount</b><br>How much buyers negotiate you down on average.<br><br><em>Example: 15% means buyers typically pay 15% less than your listing price. Listed at $100, sold for $85.</em>"></i></div>
                 <div class="fw-bold fs-6 text-danger">${neg.avg_discount_pct}%</div>
             </div>
             <div class="col-4 col-md-2">
-                <div class="text-muted small">Above Asking</div>
+                <div class="text-muted small">Above Asking <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Above Asking</b><br>Number of items that sold for MORE than your listing price. These are bidding wars or high-demand items &mdash; you could have priced higher!"></i></div>
                 <div class="fw-bold fs-6 text-success">${neg.above_asking}</div>
             </div>
             <div class="col-4 col-md-2">
-                <div class="text-muted small">At Asking</div>
+                <div class="text-muted small">At Asking <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>At Asking</b><br>Items that sold for exactly your listing price. Perfect pricing &mdash; buyers saw the value immediately."></i></div>
                 <div class="fw-bold fs-6">${neg.at_asking}</div>
             </div>
             <div class="col-4 col-md-2">
-                <div class="text-muted small">Below Asking</div>
+                <div class="text-muted small">Below Asking <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Below Asking</b><br>Items where the buyer negotiated a lower price. This is normal &mdash; but if most items are below asking, consider listing higher to leave room for negotiation."></i></div>
                 <div class="fw-bold fs-6 text-warning">${neg.below_asking}</div>
             </div>
         </div>
         ${aboveHtml}
     `;
+    // Initialize tooltips on dynamically rendered negotiation stats
+    document.querySelectorAll('#negotiationBody [data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el, { trigger: 'hover focus', delay: { show: 200, hide: 100 } });
+    });
 }
 
 function renderBestFlips(items) {

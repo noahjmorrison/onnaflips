@@ -7,121 +7,121 @@
     <a href="/add" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Item</a>
 </div>
 
-<!-- Stats Cards -->
+<!-- Stats Cards Row 1 -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Total Profit</b><br>The total money you've made after subtracting what you paid for items.<br><br><em>Example: You bought a table for $30 and sold it for $200. Your profit on that item is $170. This number adds up the profit from every item you've sold.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-success"><i class="bi bi-cash-stack"></i></div>
                 <div class="stat-value text-success" id="totalProfit">$0</div>
-                <div class="stat-label">Total Profit</div>
+                <div class="stat-label">Total Profit <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Total Revenue</b><br>The total amount of money collected from all sales, before subtracting costs.<br><br><em>Example: If you sold 3 items for $200, $150, and $100, your total revenue is $450. This is the 'top line' number &mdash; what buyers actually paid you.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-primary"><i class="bi bi-cart-check"></i></div>
                 <div class="stat-value text-primary" id="totalRevenue">$0</div>
-                <div class="stat-label">Total Revenue</div>
+                <div class="stat-label">Total Revenue <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Active Listings</b><br>The number of items currently listed for sale that haven't sold yet.<br><br><em>Example: If you have a dresser, 2 chairs, and a mirror posted for sale right now, this would show 4.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-warning"><i class="bi bi-tags"></i></div>
                 <div class="stat-value" id="listedCount">0</div>
-                <div class="stat-label">Active Listings</div>
+                <div class="stat-label">Active Listings <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Average Margin</b><br>The average percentage of each sale that is pure profit. Higher is better!<br><br><em>Example: You sell a chair for $100 that you bought for $20. Your margin is 80% because $80 out of every $100 is profit. This averages that across all your sales.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-info"><i class="bi bi-percent"></i></div>
                 <div class="stat-value" id="avgMargin">0%</div>
-                <div class="stat-label">Avg Margin</div>
+                <div class="stat-label">Avg Margin <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Second Row Stats -->
+<!-- Stats Cards Row 2 -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Total Spent</b><br>The total amount of money spent buying all items (both sold and still listed).<br><br><em>Example: If you bought 10 items and spent between $5-$75 on each, this adds up every dollar you've spent acquiring inventory.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-danger"><i class="bi bi-wallet2"></i></div>
                 <div class="stat-value" id="totalSpent">$0</div>
-                <div class="stat-label">Total Spent</div>
+                <div class="stat-label">Total Spent <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Avg Days to Sell</b><br>The average number of days between buying an item and selling it.<br><br><em>Example: If one item sold in 3 days and another in 7 days, the average is 5 days. Lower means items are selling faster, which is great for cash flow!</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-secondary"><i class="bi bi-hourglass-split"></i></div>
                 <div class="stat-value" id="avgDays">0</div>
-                <div class="stat-label">Avg Days to Sell</div>
+                <div class="stat-label">Avg Days to Sell <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Items Sold</b><br>The total number of items that have been successfully sold.<br><br><em>Example: If you've flipped 41 pieces of furniture since starting, this shows 41.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-primary"><i class="bi bi-check2-circle"></i></div>
                 <div class="stat-value" id="soldCount">0</div>
-                <div class="stat-label">Items Sold</div>
+                <div class="stat-label">Items Sold <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true" title="<b>Currently Invested</b><br>The total amount of money tied up in items that haven't sold yet. This is money you've spent but haven't gotten back.<br><br><em>Example: You have 3 unsold items that cost $30, $15, and $8 to buy. Your currently invested amount is $53. Once these sell, that money comes back plus profit!</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-warning"><i class="bi bi-piggy-bank"></i></div>
                 <div class="stat-value" id="currentInvested">$0</div>
-                <div class="stat-label">Currently Invested</div>
+                <div class="stat-label">Currently Invested <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Third Row Stats -->
+<!-- Stats Cards Row 3 -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="<b>Predicted Profit</b><br>The estimated profit you'll make if all currently listed items sell at their listing price.<br><br><em>Example: You have a dresser listed for $425 that cost $30. The predicted profit on that one item is $395. This adds up the estimated profit for all listed items.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-success"><i class="bi bi-crystal-ball"></i></div>
                 <div class="stat-value text-success" id="predictedProfit">$0</div>
-                <div class="stat-label">Predicted Profit</div>
+                <div class="stat-label">Predicted Profit <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="<b>Weekly Profit</b><br>Your average profit per week since you started the business. Calculated by dividing total profit by the number of weeks you've been flipping.<br><br><em>Example: If you've made $4,166 profit over 17 weeks, that's about $245/week. This helps you estimate what you'll earn going forward.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-primary"><i class="bi bi-calendar-week"></i></div>
                 <div class="stat-value text-primary" id="weeklyProfit">$0</div>
-                <div class="stat-label">Weekly Profit</div>
+                <div class="stat-label">Weekly Profit <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="<b>Money Multiplier</b><br>How many times your money comes back when you sell. Shows how effectively you're turning spending into revenue.<br><br><em>Example: A 5x multiplier means for every $1 you spend buying furniture, you get $5 back in sales. So $100 spent turns into $500 in revenue!</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-warning"><i class="bi bi-arrow-repeat"></i></div>
                 <div class="stat-value text-warning" id="moneyMultiplier">0x</div>
-                <div class="stat-label">Money Multiplier</div>
+                <div class="stat-label">Money Multiplier <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card h-100 has-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" title="<b>Total Items</b><br>The total number of items tracked in the system, including both sold items and items still listed for sale.<br><br><em>Example: If you've sold 41 items and have 9 still listed, your total is 50 items.</em>">
             <div class="card-body text-center">
                 <div class="stat-icon text-secondary"><i class="bi bi-collection"></i></div>
                 <div class="stat-value" id="totalItems">0</div>
-                <div class="stat-label">Total Items</div>
+                <div class="stat-label">Total Items <i class="bi bi-info-circle-fill text-muted small"></i></div>
             </div>
         </div>
     </div>
@@ -131,7 +131,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-8">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-graph-up"></i> Monthly Profit</div>
+            <div class="card-header has-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Monthly Profit</b><br>Shows how much profit you made each month. Helps you spot trends &mdash; are sales growing? Which months are strongest?<br><br><em>Example: November shows $1,468 because you sold a lot of high-value items that month, while December was slower at $749.</em>"><i class="bi bi-graph-up"></i> Monthly Profit <i class="bi bi-info-circle-fill text-muted small"></i></div>
             <div class="card-body">
                 <canvas id="monthlyChart"></canvas>
             </div>
@@ -139,7 +139,7 @@
     </div>
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-trophy"></i> Top 5 Items by Profit</div>
+            <div class="card-header has-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Top 5 Items by Profit</b><br>Your five most profitable sales ever, ranked by how much money you made on each one.<br><br><em>Example: The big dresser you bought for $50 and sold for $400 made $350 profit &mdash; that's your #1 flip!</em>"><i class="bi bi-trophy"></i> Top 5 Items by Profit <i class="bi bi-info-circle-fill text-muted small"></i></div>
             <div class="card-body">
                 <ul class="list-group list-group-flush" id="topItemsList">
                 </ul>
@@ -152,7 +152,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-lightning"></i> Most Efficient Flips (Profit/Day)</div>
+            <div class="card-header has-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Most Efficient Flips (Profit/Day)</b><br>Items ranked by how much profit they made per day you held them. This shows which flips were the best use of your time and money.<br><br><em>Example: A coffee table you bought for $18 and sold for $150 in just 1 day = $132/day. That's way more efficient than an item that made $200 but took 2 months to sell ($3/day).</em>"><i class="bi bi-lightning"></i> Most Efficient Flips (Profit/Day) <i class="bi bi-info-circle-fill text-muted small"></i></div>
             <div class="card-body">
                 <ul class="list-group list-group-flush" id="topEfficiencyList">
                 </ul>
@@ -161,7 +161,7 @@
     </div>
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header"><i class="bi bi-clock-history"></i> Currently Listed</div>
+            <div class="card-header has-tooltip" data-bs-toggle="tooltip" data-bs-html="true" title="<b>Currently Listed</b><br>All items you currently have posted for sale. Shows what you paid, what you're asking, and how much profit you expect to make on each one.<br><br><em>Click any item name to edit its details or mark it as sold when it sells!</em>"><i class="bi bi-clock-history"></i> Currently Listed <i class="bi bi-info-circle-fill text-muted small"></i></div>
             <div class="card-body" id="currentlyListed">
                 <p class="text-muted">Loading...</p>
             </div>
@@ -173,7 +173,13 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', loadDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize all Bootstrap tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el, { trigger: 'hover focus', delay: { show: 200, hide: 100 } });
+    });
+    loadDashboard();
+});
 
 async function loadDashboard() {
     const [statsRes, listedRes] = await Promise.all([
