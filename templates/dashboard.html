@@ -87,6 +87,46 @@
     </div>
 </div>
 
+<!-- Third Row Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-success"><i class="bi bi-crystal-ball"></i></div>
+                <div class="stat-value text-success" id="predictedProfit">$0</div>
+                <div class="stat-label">Predicted Profit</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary"><i class="bi bi-calendar-week"></i></div>
+                <div class="stat-value text-primary" id="weeklyProfit">$0</div>
+                <div class="stat-label">Weekly Profit</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-warning"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="stat-value text-warning" id="moneyMultiplier">0x</div>
+                <div class="stat-label">Money Multiplier</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <div class="stat-icon text-secondary"><i class="bi bi-collection"></i></div>
+                <div class="stat-value" id="totalItems">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Charts Row -->
 <div class="row g-3 mb-4">
     <div class="col-md-8">
@@ -152,6 +192,10 @@ async function loadDashboard() {
     document.getElementById('avgMargin').textContent = Math.round(stats.avg_margin * 100) + '%';
     document.getElementById('avgDays').textContent = stats.avg_days_to_sell;
     document.getElementById('currentInvested').textContent = '$' + stats.current_invested.toLocaleString();
+    document.getElementById('predictedProfit').textContent = '$' + stats.predicted_profit.toLocaleString();
+    document.getElementById('weeklyProfit').textContent = '$' + stats.weekly_profit.toLocaleString();
+    document.getElementById('moneyMultiplier').textContent = stats.money_multiplier + 'x';
+    document.getElementById('totalItems').textContent = stats.total_items;
 
     // Monthly profit chart
     const ctx = document.getElementById('monthlyChart').getContext('2d');

@@ -197,6 +197,13 @@ def get_stats():
     if days_list:
         avg_days = round(sum(days_list) / len(days_list), 1)
 
+    # Business velocity
+    all_bought = [i.date_bought for i in sold_items if i.date_bought]
+    all_sold_dates = [i.date_sold for i in sold_items if i.date_sold]
+    days_biz = (max(all_sold_dates) - min(all_bought)).days if all_bought and all_sold_dates else 1
+    weekly_profit = round(total_profit / max(days_biz / 7, 1))
+    money_multiplier = round(total_revenue / total_spent, 1) if total_spent > 0 else 0
+
     # Monthly profit breakdown
     monthly = {}
     for item in sold_items:
@@ -230,6 +237,8 @@ def get_stats():
         'predicted_profit': round(predicted_profit, 2),
         'avg_margin': avg_margin,
         'avg_days_to_sell': avg_days,
+        'weekly_profit': weekly_profit,
+        'money_multiplier': money_multiplier,
         'monthly_profit': [{'month': m, 'profit': round(p, 2)} for m, p in monthly_sorted],
         'top_items': [{'description': i.description, 'profit': i.actual_profit} for i in top_items],
         'top_by_efficiency': [
