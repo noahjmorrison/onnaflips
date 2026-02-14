@@ -34,9 +34,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-download"></i> Download PDF Report
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                        </button>
+                        <button type="button" class="btn btn-success flex-grow-1" id="excelBtn">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Download Excel
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -115,5 +120,15 @@ async function loadPreview() {
         </div>
     `;
 }
+
+// Excel download button
+document.getElementById('excelBtn').addEventListener('click', () => {
+    const form = document.getElementById('exportForm');
+    const params = new URLSearchParams(new FormData(form));
+    if (document.getElementById('includeListed').checked) {
+        params.set('include_listed', '1');
+    }
+    window.open('/api/excel-export?' + params.toString(), '_blank');
+});
 </script>
 {% endblock %}

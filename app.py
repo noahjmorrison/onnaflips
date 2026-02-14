@@ -450,6 +450,151 @@ def get_analytics():
     })
 
 
+@app.route('/api/excel-export', methods=['GET'])
+def generate_excel():
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    start = _parse_date(request.args.get('start_date'))
+    end = _parse_date(request.args.get('end_date'))
+    include_listed = request.args.get('include_listed') == '1'
+
+    query = Item.query.filter_by(status='Sold')
+    if start:
+        query = query.filter(Item.date_sold >= start)
+    if end:
+        query = query.filter(Item.date_sold <= end)
+    sold_items = query.order_by(Item.date_sold).all()
+
+    listed_items = []
+    if include_listed:
+        listed_items = Item.query.filter_by(status='Listed').all()
+
+    wb = Workbook()
+
+    # --- Sold Items Sheet ---
+    ws = wb.active
+    ws.title = 'Sold Items'
+
+    header_font = Font(bold=True, color='FFFFFF', size=11)
+    header_fill = PatternFill(start_color='1A1A2E', end_color='1A1A2E', fill_type='solid')
+    money_fmt = '$#,##0.00'
+    pct_fmt = '0%'
+    total_fill = PatternFill(start_color='E8F5E9', end_color='E8F5E9', fill_type='solid')
+    total_font = Font(bold=True, size=11)
+    thin_border = Border(
+        bottom=Side(style='thin', color='DDDDDD'),
+    )
+
+    headers = ['Date Bought', 'Date Sold', 'Item', 'Cost', 'Listing Price', 'Sold For',
+               'Profit', 'Margin', 'Days to Sell', 'Profit/Day']
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+
+    for row_idx, item in enumerate(sold_items, 2):
+        ws.cell(row=row_idx, column=1, value=item.date_bought)
+        ws.cell(row=row_idx, column=2, value=item.date_sold)
+        ws.cell(row=row_idx, column=3, value=item.description)
+        ws.cell(row=row_idx, column=4, value=item.cost).number_format = money_fmt
+        ws.cell(row=row_idx, column=5, value=item.listing_price).number_format = money_fmt if item.listing_price else 'General'
+        ws.cell(row=row_idx, column=6, value=item.sold_for).number_format = money_fmt
+        ws.cell(row=row_idx, column=7, value=item.actual_profit).number_format = money_fmt
+        ws.cell(row=row_idx, column=8, value=item.actual_margin).number_format = pct_fmt if item.actual_margin else 'General'
+        ws.cell(row=row_idx, column=9, value=item.days_to_sell)
+        ws.cell(row=row_idx, column=10, value=item.profit_per_day).number_format = money_fmt if item.profit_per_day else 'General'
+        for col in range(1, 11):
+            ws.cell(row=row_idx, column=col).border = thin_border
+
+    # Totals row
+    tot_row = len(sold_items) + 2
+    total_cost = sum(i.cost or 0 for i in sold_items)
+    total_revenue = sum(i.sold_for or 0 for i in sold_items)
+    total_profit = sum(i.actual_profit or 0 for i in sold_items)
+    ws.cell(row=tot_row, column=3, value='TOTALS').font = total_font
+    ws.cell(row=tot_row, column=4, value=total_cost).number_format = money_fmt
+    ws.cell(row=tot_row, column=6, value=total_revenue).number_format = money_fmt
+    ws.cell(row=tot_row, column=7, value=total_profit).number_format = money_fmt
+    for col in range(1, 11):
+        ws.cell(row=tot_row, column=col).fill = total_fill
+        ws.cell(row=tot_row, column=col).font = total_font
+
+    # Auto-width columns
+    for col in range(1, 11):
+        ws.column_dimensions[get_column_letter(col)].width = 14
+    ws.column_dimensions['C'].width = 35
+
+    # --- Listed Items Sheet ---
+    if listed_items:
+        ws2 = wb.create_sheet('Unsold Inventory')
+        inv_headers = ['Date Bought', 'Item', 'Cost', 'Listing Price', 'Est. Profit']
+        for col, h in enumerate(inv_headers, 1):
+            cell = ws2.cell(row=1, column=col, value=h)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center')
+
+        for row_idx, item in enumerate(listed_items, 2):
+            ws2.cell(row=row_idx, column=1, value=item.date_bought)
+            ws2.cell(row=row_idx, column=2, value=item.description)
+            ws2.cell(row=row_idx, column=3, value=item.cost).number_format = money_fmt
+            ws2.cell(row=row_idx, column=4, value=item.listing_price).number_format = money_fmt if item.listing_price else 'General'
+            ws2.cell(row=row_idx, column=5, value=item.predicted_profit).number_format = money_fmt if item.predicted_profit else 'General'
+
+        ws2.column_dimensions['A'].width = 14
+        ws2.column_dimensions['B'].width = 35
+        ws2.column_dimensions['C'].width = 14
+        ws2.column_dimensions['D'].width = 14
+        ws2.column_dimensions['E'].width = 14
+
+    # --- Summary Sheet ---
+    ws3 = wb.create_sheet('Summary')
+    summary_header_fill = PatternFill(start_color='28A745', end_color='28A745', fill_type='solid')
+
+    ws3.cell(row=1, column=1, value='Metric').font = header_font
+    ws3.cell(row=1, column=1).fill = summary_header_fill
+    ws3.cell(row=1, column=2, value='Value').font = header_font
+    ws3.cell(row=1, column=2).fill = summary_header_fill
+
+    margins = [i.actual_margin for i in sold_items if i.actual_margin is not None]
+    avg_margin = sum(margins) / len(margins) if margins else 0
+    days = [i.days_to_sell for i in sold_items if i.days_to_sell and i.days_to_sell > 0]
+    avg_days = sum(days) / len(days) if days else 0
+
+    summary = [
+        ('Items Sold', len(sold_items)),
+        ('Total Cost of Goods', total_cost),
+        ('Total Revenue', total_revenue),
+        ('Total Profit', total_profit),
+        ('Average Margin', avg_margin),
+        ('Average Days to Sell', round(avg_days, 1)),
+        ('Currently Listed', len(listed_items)),
+        ('Current Inventory Cost', sum(i.cost or 0 for i in listed_items)),
+        ('Predicted Profit (Listed)', sum(i.predicted_profit or 0 for i in listed_items)),
+    ]
+    for row_idx, (label, val) in enumerate(summary, 2):
+        ws3.cell(row=row_idx, column=1, value=label).font = Font(bold=True)
+        cell = ws3.cell(row=row_idx, column=2, value=val)
+        if isinstance(val, float) and 'Margin' in label:
+            cell.number_format = pct_fmt
+        elif isinstance(val, (int, float)) and any(w in label for w in ['Cost', 'Revenue', 'Profit']):
+            cell.number_format = money_fmt
+
+    ws3.column_dimensions['A'].width = 30
+    ws3.column_dimensions['B'].width = 18
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"OnnaFlips_Export_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                     as_attachment=True, download_name=filename)
+
+
 @app.route('/api/tax-export', methods=['GET'])
 def generate_tax_pdf():
     start = _parse_date(request.args.get('start_date'))
